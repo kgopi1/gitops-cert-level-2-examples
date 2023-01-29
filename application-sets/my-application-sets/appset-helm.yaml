@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: chaos-engineering-helm
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: in-cluster
+        url: https://kubernetes.default.svc
+  template:
+    metadata:
+      name: '{{cluster}}-chaos-engineering-helm'
+    spec:
+      project: default
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+      source:
+        path: application-sets/external-secrets
+        repoURL: 'https://github.com/kgopi1/gitops-cert-level-2-examples.git'
+        targetRevision: HEAD
+        helm:
+          valueFiles:
+            - values.yaml
+      destination:
+        server: '{{url}}'
+        namespace: '{{cluster}}-eso'
